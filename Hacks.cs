@@ -59,9 +59,8 @@ namespace RaftHax
 
                 NetworkEntities = UnityEngine.GameObject.FindObjectsOfType<Network_Entity>().ToList(); 
                 NetworkPlayers = UnityEngine.GameObject.FindObjectsOfType<Network_Player>().ToList();
-
                 ItemObjects = UnityEngine.GameObject.FindObjectsOfType<PickupItem_Networked>().ToList();
-
+                
                 foreach (Network_Player Player in NetworkPlayers)
                 {
                     if (Player.IsLocalPlayer) localPlayer = Player;
@@ -78,8 +77,6 @@ namespace RaftHax
 
         public void OnGUI()
         {
-            
-
             if (t_MENU) //Menu after Insert has been pressed
             {
                 GUI.Box(new Rect(5f, 5f, 300f, 90f), "");
@@ -94,10 +91,7 @@ namespace RaftHax
                 {
                     t_CTRL = !t_CTRL;
                 }
-
             }
-            
-
             if (t_CTRL && t_MENU)
             {
                 GUI.Box(new Rect(5f, 100f, 300f, 300f), "");
@@ -170,7 +164,6 @@ namespace RaftHax
                 {
                     t_GOD = !t_GOD;
                 }
-
             }
             
             if (t_GOD)
@@ -210,7 +203,6 @@ namespace RaftHax
                     }
                 }
 
-                
                 Vector3 pivotPos = localShark.transform.position;
                 Vector3 playerFootPos; playerFootPos.x = pivotPos.x; playerFootPos.z = pivotPos.z; playerFootPos.y = pivotPos.y - 2f;
                 Vector3 playerHeadPos; playerHeadPos.x = playerFootPos.x; playerHeadPos.z = playerFootPos.z; playerHeadPos.y = playerFootPos.y + 2f;
@@ -258,11 +250,7 @@ namespace RaftHax
                         DrawText(w2s_playerFoot1, w2s_playerHead1, $"{item.PickupItem.PickupName}");
                     }
                 }
-
-
-
             }
-            
         }
 
         public void DrawESP(Vector3 objfootPos, Vector3 objheadPos, Color objColor, String name, String health)
@@ -283,9 +271,7 @@ namespace RaftHax
             float widthOffset = 2f;
             float width = height / widthOffset;
 
-            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name}", Color.red);
-            
+            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - (height /2)), $"{name}", Color.red);
         }
-
     }
 }
