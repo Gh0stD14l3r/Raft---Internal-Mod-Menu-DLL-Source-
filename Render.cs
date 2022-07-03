@@ -34,6 +34,7 @@ namespace RaftHax
 			var size = StringStyle.CalcSize(content);
 			var upperLeft = centered ? position - size / 2f : position;
 			GUI.Label(new Rect(upperLeft, size), content);
+			Color = Color.white; //Reset color back to norm
 		}
 
 		public static Texture2D lineTex;

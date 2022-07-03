@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Threading;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -7,7 +8,7 @@ namespace RaftHax
 {
     class Hacks : MonoBehaviour
     {
-        public static string m_Title = "Raft Mod Menu - Gh0st v1";
+        public static string m_Title = "Raft Mod Menu - Gh0st v1.1";
 
         public static bool t_MENU = true;
         public static bool t_ESP = false;
@@ -17,6 +18,14 @@ namespace RaftHax
         public static bool toggleESP;
         public static bool toggleControl;
         public static bool toggleGod;
+
+        public static float Timer = 0f;
+        public static List<Network_Entity> NetworkEntities = new List<Network_Entity>();
+        public static List<Network_Player> NetworkPlayers = new List<Network_Player>();
+        public static List<PickupItem_Networked> ItemObjects = new List<PickupItem_Networked>();
+
+
+        public static Camera MainCamera = null;
 
         public static Network_Player localPlayer = null;
         public static Network_Entity localShark = null;
@@ -41,10 +50,36 @@ namespace RaftHax
                 t_MENU = !t_MENU;
             }
 
+            Timer += Time.deltaTime;
+            if (Timer >= 5f) // how long you should wait between updates
+            {
+                Timer = 0f; 
+                            
+                MainCamera = Camera.main;
+
+                NetworkEntities = UnityEngine.GameObject.FindObjectsOfType<Network_Entity>().ToList(); 
+                NetworkPlayers = UnityEngine.GameObject.FindObjectsOfType<Network_Player>().ToList();
+
+                ItemObjects = UnityEngine.GameObject.FindObjectsOfType<PickupItem_Networked>().ToList();
+
+                foreach (Network_Player Player in NetworkPlayers)
+                {
+                    if (Player.IsLocalPlayer) localPlayer = Player;
+                }
+                foreach (Network_Entity Entity in NetworkEntities)
+                {
+                    if (Entity.name.Contains("Shark")) localShark = Entity;
+                }
+                
+                localRaft = UnityEngine.GameObject.FindObjectOfType<Raft>();
+            }
+
         }
 
         public void OnGUI()
         {
+            
+
             if (t_MENU) //Menu after Insert has been pressed
             {
                 GUI.Box(new Rect(5f, 5f, 300f, 90f), "");
@@ -60,36 +95,6 @@ namespace RaftHax
                     t_CTRL = !t_CTRL;
                 }
 
-                if (localPlayer == null)
-                {
-                    foreach (Network_Player Player in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Player)) as Network_Player[])
-                    {
-                        if (Player.IsLocalPlayer)
-                        {
-                            localPlayer = Player;
-                        }
-                    }
-                }
-                if (localShark == null)
-                {
-                    foreach (Network_Entity Entity in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Entity)) as Network_Entity[])
-                    {
-                        if (Entity.name.Contains("AI_Shark"))
-                        {
-                            localShark = Entity;
-                        }
-                    }
-                }
-                if (localRaft == null)
-                {
-                    foreach (Raft Entity in UnityEngine.GameObject.FindObjectsOfType(typeof(Raft)) as Raft[])
-                    {
-                        if (Entity.isActiveAndEnabled)
-                        {
-                            localRaft = Entity;
-                        }
-                    }
-                }
             }
             
 
@@ -99,28 +104,15 @@ namespace RaftHax
 
                 if (GUI.Button(new Rect(10f, 105f, 140f, 30f), "Kill Shark")) //Kill Shark
                 {
-                    foreach (Network_Entity Shark_Entity in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Entity)) as Network_Entity[])
-                    {
-                        if (Shark_Entity.name.Contains("Shark"))
-                        {
-                            Shark_Entity.Button_Kill();
-                        }
-                        
-                    }
+                    localShark.Button_Kill();
                 }
                 if (GUI.Button(new Rect(10f, 140f, 140f, 30f), "Damage Shark")) // Damage Shark by 20
                 {
-                    foreach (Network_Entity Shark_Entity in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Entity)) as Network_Entity[])
-                    {
-                        if (Shark_Entity.name.Contains("Shark"))
-                        {
-                            Shark_Entity.Button_Damage();
-                        }
-                    }
+                    localShark.Button_Damage();
                 }
                 if (GUI.Button(new Rect(10f, 175f, 140f, 30f), "Revive Players")) //Revive All Players
                 {
-                    foreach (Network_Player Player in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Player)) as Network_Player[])
+                    foreach (Network_Player Player in NetworkPlayers)
                     {
                         if (Player.Stats.IsDead || Convert.ToDouble(Player.Stats.stat_health) <= 0)
                         {
@@ -203,7 +195,7 @@ namespace RaftHax
 
             if (t_ESP)
             {
-                foreach (Network_Player Player in UnityEngine.GameObject.FindObjectsOfType(typeof(Network_Player)) as Network_Player[])
+                foreach (Network_Player Player in NetworkPlayers)
                 {
                     Vector3 pivotPos1 = Player.transform.position;
                     Vector3 playerFootPos1; playerFootPos1.x = pivotPos1.x; playerFootPos1.z = pivotPos1.z; playerFootPos1.y = pivotPos1.y - 2f;
@@ -211,12 +203,13 @@ namespace RaftHax
 
                     Vector3 w2s_playerFoot1 = Camera.main.WorldToScreenPoint(playerFootPos1);
                     Vector3 w2s_playerHead1 = Camera.main.WorldToScreenPoint(playerHeadPos1);
-                    
+
                     if (w2s_playerFoot1.z > 0f)
                     {
                         DrawESP(w2s_playerFoot1, w2s_playerHead1, Color.green, Player.name, Player.Stats.stat_health.Value.ToString());
                     }
                 }
+
                 
                 Vector3 pivotPos = localShark.transform.position;
                 Vector3 playerFootPos; playerFootPos.x = pivotPos.x; playerFootPos.z = pivotPos.z; playerFootPos.y = pivotPos.y - 2f;
@@ -225,7 +218,7 @@ namespace RaftHax
                 Vector3 w2s_playerFoot = Camera.main.WorldToScreenPoint(playerFootPos);
                 Vector3 w2s_playerHead = Camera.main.WorldToScreenPoint(playerHeadPos);
 
-                if (w2s_playerFoot.z > 0f && !localShark.name.Contains("Player"))
+                if (w2s_playerFoot.z > 0f)
                 {
                     if (localShark.IsDead)
                     {
@@ -244,10 +237,29 @@ namespace RaftHax
                 Vector3 w2s_playerFoot4 = Camera.main.WorldToScreenPoint(playerFootPos4);
                 Vector3 w2s_playerHead4 = Camera.main.WorldToScreenPoint(playerHeadPos4);
 
-                if (w2s_playerFoot4.z > 0f && !localShark.name.Contains("Player"))
+                if (w2s_playerFoot4.z > 0f)
                 {
                     DrawESP(w2s_playerFoot4, w2s_playerHead4, Color.magenta, localRaft.name, "0");
                 }
+
+                foreach (PickupItem_Networked item in ItemObjects)
+                {
+                    Vector3 pivotPos1 = item.PickupItem.transform.position;
+                    Vector3 playerFootPos1; playerFootPos1.x = pivotPos1.x; playerFootPos1.z = pivotPos1.z; playerFootPos1.y = pivotPos1.y - 2f;
+                    Vector3 playerHeadPos1; playerHeadPos1.x = playerFootPos1.x; playerHeadPos1.z = playerFootPos1.z; playerHeadPos1.y = playerFootPos1.y + 4f;
+
+                    Vector3 w2s_playerFoot1 = Camera.main.WorldToScreenPoint(playerFootPos1);
+                    Vector3 w2s_playerHead1 = Camera.main.WorldToScreenPoint(playerHeadPos1);
+
+                    float distance = Vector3.Distance(pivotPos1, localPlayer.transform.position);
+
+                    if (w2s_playerFoot1.z > 0f && distance <= 70f)
+                    {
+                        DrawText(w2s_playerFoot1, w2s_playerHead1, $"{item.PickupItem.PickupName}");
+                    }
+                }
+
+
 
             }
             
@@ -260,8 +272,19 @@ namespace RaftHax
             float width = height / widthOffset;
 
             Render.DrawBox(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height, width, height, objColor, 2f);
-            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name} [{health}]");
+            if (health != "")
+            {
+                Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name} [{health}]");
+            }
+        }
+        public void DrawText(Vector3 objfootPos, Vector3 objheadPos, String name)
+        {
+            float height = objheadPos.y - objfootPos.y;
+            float widthOffset = 2f;
+            float width = height / widthOffset;
 
+            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name}", Color.red);
+            
         }
 
     }
