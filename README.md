@@ -13,6 +13,7 @@ This is a basic mod menu created in C#. It is a base which you can add your own 
 - Fly Raft (Numpad + to go up, Numpad - to go down)
 - Fly LocalPlayer (Buggy)
 - Area Magnet (Will teleport all items in the area to you)
+- Basic Shark Aimbot (Can be changed for other entities in the code)
 
 Insert Key - Show/Hide Menu
 End Key - Unload DLL File safely
