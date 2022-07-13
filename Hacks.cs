@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace RaftHax
 {
+   
     class Hacks : MonoBehaviour
     {
         public static string m_Title = "Raft Mod Menu - Gh0st v1.1";
@@ -14,15 +15,23 @@ namespace RaftHax
         public static bool t_ESP = false;
         public static bool t_CTRL = false;
         public static bool t_GOD = false;
+        public static bool t_FLYRAFT = false;
+        public static bool t_FLYSELF = false;
+        public static bool t_HOTKEYS = false;
+
 
         public static bool toggleESP;
         public static bool toggleControl;
         public static bool toggleGod;
+        public static bool toggleFlyingRaft;
+        public static bool toggleFlyingSelf;
+        public static bool toggleHotkeys;
 
         public static float Timer = 0f;
         public static List<Network_Entity> NetworkEntities = new List<Network_Entity>();
         public static List<Network_Player> NetworkPlayers = new List<Network_Player>();
         public static List<PickupItem_Networked> ItemObjects = new List<PickupItem_Networked>();
+        public static List<RaftBounds> Rafts = new List<RaftBounds>();
 
 
         public static Camera MainCamera = null;
@@ -31,16 +40,28 @@ namespace RaftHax
         public static Network_Entity localShark = null;
         public static Raft localRaft = null;
         
-
         public static float raft_driftSpeed = 0f;
+        private static bool isLoaded = LoadSceneManager.IsGameSceneLoaded;
 
+        private static modules.ESP mESP = new modules.ESP();
+        private static modules.GodMode mGOD = new modules.GodMode();
+        private static modules.ItemSpawner mSPAWNER = new modules.ItemSpawner();
+        private static modules.AreaItemMagnet mAreaMagnet = new modules.AreaItemMagnet();
+
+        private static float raftY = 10f, selfY = 10f;
         public void Start()
         {
-
+            
         }
 
         public void Update()
         {
+
+            if (isLoaded != LoadSceneManager.IsGameSceneLoaded)
+            {
+                isLoaded = !isLoaded;
+            }
+
             if (Input.GetKeyDown(KeyCode.End)) //Kill hacks on "End" key pressed
             {
                 Loader.unload();
@@ -49,9 +70,55 @@ namespace RaftHax
             {
                 t_MENU = !t_MENU;
             }
+            if (Input.GetKeyDown(KeyCode.Keypad1))
+            {
+                KillShark();
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad2))
+            {
+                mAreaMagnet.pickupAll(ItemObjects, localPlayer);
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad3))
+            {
+                ReviveAllPlayers();
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad4))
+            {
+                t_FLYRAFT = !t_FLYRAFT;
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad5))
+            {
+                t_GOD = !t_GOD;
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad6))
+            {
+                TeleportToRaft();
+            }
+            if (Input.GetKeyDown(KeyCode.KeypadPlus))
+            {
+                if (t_FLYRAFT && isLoaded)
+                {
+                    raftY += 0.5f;
+                }
+                if (t_FLYSELF && isLoaded)
+                {
+                    selfY += 0.5f;
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.KeypadMinus))
+            {
+                if (t_FLYRAFT && isLoaded)
+                {
+                    raftY -= 0.5f;
+                }
+                if (t_FLYSELF && isLoaded)
+                {
+                    selfY -= 0.5f;
+                }
+            }
 
             Timer += Time.deltaTime;
-            if (Timer >= 5f) // how long you should wait between updates
+            if (Timer >= 5f && isLoaded) // how long you should wait between updates
             {
                 Timer = 0f; 
                             
@@ -60,7 +127,8 @@ namespace RaftHax
                 NetworkEntities = UnityEngine.GameObject.FindObjectsOfType<Network_Entity>().ToList(); 
                 NetworkPlayers = UnityEngine.GameObject.FindObjectsOfType<Network_Player>().ToList();
                 ItemObjects = UnityEngine.GameObject.FindObjectsOfType<PickupItem_Networked>().ToList();
-                
+                Rafts = UnityEngine.GameObject.FindObjectsOfType<RaftBounds>().ToList();
+
                 foreach (Network_Player Player in NetworkPlayers)
                 {
                     if (Player.IsLocalPlayer) localPlayer = Player;
@@ -69,69 +137,77 @@ namespace RaftHax
                 {
                     if (Entity.name.Contains("Shark")) localShark = Entity;
                 }
-                
+
                 localRaft = UnityEngine.GameObject.FindObjectOfType<Raft>();
+                
             }
 
+            updateChecks();
         }
 
         public void OnGUI()
         {
-            if (t_MENU) //Menu after Insert has been pressed
+            if (!isLoaded)
             {
-                GUI.Box(new Rect(5f, 5f, 300f, 90f), "");
-                GUI.Label(new Rect(10f, 5f, 290f, 30f), m_Title);
-                toggleESP = GUI.Toggle(new Rect(10f, 30f, 290f, 25f), t_ESP, "Enable/Disable ESP");
+                GUI.Box(new Rect(5f, 5f, 250f, 30f), "");
+                GUI.Label(new Rect(10f, 5f, 250f, 30f), "\x57\x61\x69\x74\x69\x6e\x67\x20\x66\x6f\x72\x20\x67\x61\x6d\x65\x20\x74\x6f\x20\x6c\x6f\x61\x64");
+            }
+            
+            if (t_MENU && isLoaded) //Menu after Insert has been pressed
+            {
+                GUI.Box(new Rect(5f, 5f, 250f, 95f), "");
+                GUI.Label(new Rect(10f, 5f, 250f, 30f), m_Title);
+                
+                toggleESP = GUI.Toggle(new Rect(10f, 30f, 250f, 25f), t_ESP, "Enable/Disable ESP");
                 if (toggleESP != t_ESP)
                 {
                     t_ESP = !t_ESP;
                 }
-                toggleControl = GUI.Toggle(new Rect(10f, 55f, 290f, 25f), t_CTRL, "Control Panel");
+                toggleControl = GUI.Toggle(new Rect(10f, 55f, 250f, 25f), t_CTRL, "Control Panel");
                 if (toggleControl != t_CTRL)
                 {
                     t_CTRL = !t_CTRL;
                 }
+                toggleHotkeys = GUI.Toggle(new Rect(10f, 80f, 250f, 25f), t_HOTKEYS, "Display Hotkeys");
+                if (toggleHotkeys != t_HOTKEYS)
+                {
+                    t_HOTKEYS = !t_HOTKEYS;
+                }
             }
-            if (t_CTRL && t_MENU)
+            if (t_CTRL && t_MENU && isLoaded)
             {
                 GUI.Box(new Rect(5f, 100f, 300f, 300f), "");
 
                 if (GUI.Button(new Rect(10f, 105f, 140f, 30f), "Kill Shark")) //Kill Shark
                 {
-                    localShark.Button_Kill();
+                    KillShark();
+                }
+                if (GUI.Button(new Rect(155f, 105f, 140f, 30f), "Item Spawn")) //Item Spawner
+                {
+                    mSPAWNER.spawnItem("Plastic", 5, localPlayer);
+                    mSPAWNER.spawnItem("Plank", 5, localPlayer);
+
                 }
                 if (GUI.Button(new Rect(10f, 140f, 140f, 30f), "Damage Shark")) // Damage Shark by 20
                 {
                     localShark.Button_Damage();
                 }
+                if (GUI.Button(new Rect(155f, 140f, 140f, 30f), "Area Magnet")) // Teleport items in area to you
+                {
+                    mAreaMagnet.pickupAll(ItemObjects, localPlayer);
+                }
                 if (GUI.Button(new Rect(10f, 175f, 140f, 30f), "Revive Players")) //Revive All Players
                 {
-                    foreach (Network_Player Player in NetworkPlayers)
-                    {
-                        if (Player.Stats.IsDead || Convert.ToDouble(Player.Stats.stat_health) <= 0)
-                        {
-                            Player.Revive();
-                        }
-                    }
+                    ReviveAllPlayers();
+                    
+                }
+                if (GUI.Button(new Rect(155f, 175f, 140f, 30f), "")) //
+                {
+                    
                 }
                 if (GUI.Button(new Rect(10f, 210f, 140f, 30f), "Restore Stats")) //Fill your personal stats
                 {
-                    if (localPlayer.Stats.stat_health.Value != localPlayer.Stats.stat_health.Max)
-                    {
-                        localPlayer.Stats.stat_health.SetToMaxValue();
-                    }
-                    if (localPlayer.Stats.stat_oxygen.Value != localPlayer.Stats.stat_oxygen.Max)
-                    {
-                        localPlayer.Stats.stat_oxygen.SetToMaxValue();
-                    }
-                    if (localPlayer.Stats.stat_hunger.Normal.Value != localPlayer.Stats.stat_hunger.Normal.Max)
-                    {
-                        localPlayer.Stats.stat_hunger.Consume(1000f, 0f, false);
-                    }
-                    if (localPlayer.Stats.stat_thirst.Normal.Value != localPlayer.Stats.stat_thirst.Normal.Max)
-                    {
-                        localPlayer.Stats.stat_thirst.Consume(1000f, 0f, false);
-                    }
+                    mGOD.enable(localPlayer);
                 }
                 if (GUI.Button(new Rect(10f, 245f, 140f, 30f), "Anchor Raft")) //Stop the raft
                 {
@@ -153,125 +229,122 @@ namespace RaftHax
                 }
                 if (GUI.Button(new Rect(10f, 280f, 140f, 30f), "Teleport To Raft")) //Teleport To Raft
                 {
-                    if (localRaft != null && localPlayer != null)
-                    {
-                        Vector3 raftPos = localRaft.transform.position;
-                        localPlayer.transform.position = raftPos;
-                    }
+                    TeleportToRaft();
                 }
-                toggleGod = GUI.Toggle(new Rect(10f, 315f, 250f, 25f), t_GOD, "Keep Max Stats (GOD Mode)"); //God Mode
+                toggleGod = GUI.Toggle(new Rect(10f, 315f, 140f, 25f), t_GOD, "GOD Mode"); //God Mode
                 if (toggleGod != t_GOD)
                 {
                     t_GOD = !t_GOD;
                 }
-            }
-            
-            if (t_GOD)
-            {
-                if (localPlayer.Stats.stat_health.Value != localPlayer.Stats.stat_health.Max)
+                toggleGod = GUI.Toggle(new Rect(155f, 315f, 140f, 25f), t_GOD, "View Players"); //Player Interaction
+                if (toggleGod != t_GOD)
                 {
-                    localPlayer.Stats.stat_health.SetToMaxValue();
+                    t_GOD = !t_GOD;
                 }
-                if (localPlayer.Stats.stat_oxygen.Value != localPlayer.Stats.stat_oxygen.Max)
+                toggleFlyingRaft = GUI.Toggle(new Rect(10f, 340f, 140f, 25f), t_FLYRAFT, "Flying Raft"); //Toggle Harry Potter raft
+                if (toggleFlyingRaft != t_FLYRAFT)
                 {
-                    localPlayer.Stats.stat_oxygen.SetToMaxValue();
+                    t_FLYRAFT = !t_FLYRAFT;
                 }
-                if (localPlayer.Stats.stat_hunger.Normal.Value != localPlayer.Stats.stat_hunger.Normal.Max)
+                toggleFlyingSelf = GUI.Toggle(new Rect(10f, 365f, 140f, 25f), t_FLYSELF, "Localplayer Fly"); //Toggle flying person *** Quite Buggy ***
+                if (toggleFlyingSelf != t_FLYSELF)
                 {
-                    localPlayer.Stats.stat_hunger.Consume(1000f, 0f, false);
-                }
-                if (localPlayer.Stats.stat_thirst.Normal.Value != localPlayer.Stats.stat_thirst.Normal.Max)
-                {
-                    localPlayer.Stats.stat_thirst.Consume(1000f, 0f, false);
+                    t_FLYSELF = !t_FLYSELF;
                 }
             }
 
-            if (t_ESP)
+            if (t_HOTKEYS && t_MENU && isLoaded)
+            {
+                GUI.Box(new Rect(260f, 5f, 900f, 25f), "");
+                GUI.Label(new Rect(265f, 5f, 900f, 25f), "\x4b\x69\x6c\x6c\x20\x53\x68\x61\x72\x6b\x20\x5b\x4e\x75\x6d\x70\x61\x64\x31\x5d\x20\x2d\x20\x41\x72\x65\x61\x20\x4d\x61\x67\x6e\x65\x74\x20\x5b\x4e\x75\x6d\x70\x61\x64\x32\x5d\x20\x2d\x20\x52\x65\x76\x69\x76\x65\x20\x50\x6c\x61\x79\x65\x72\x73\x20\x5b\x4e\x75\x6d\x70\x61\x64\x33\x5d\x20\x2d\x20\x46\x6c\x79\x69\x6e\x67\x20\x52\x61\x66\x74\x20\x5b\x4e\x75\x6d\x70\x61\x64\x34\x5d\x20\x2d\x20\x47\x6f\x64\x20\x4d\x6f\x64\x65\x20\x5b\x4e\x75\x6d\x70\x61\x64\x35\x5d\x20\x2d\x20\x54\x50\x20\x54\x6f\x20\x52\x61\x66\x74\x20\x5b\x4e\x75\x6d\x70\x61\x64\x36\x5d");
+
+            }
+
+            performESP();
+        } //
+
+        private void performESP()
+        {
+            if (t_ESP && isLoaded)
             {
                 foreach (Network_Player Player in NetworkPlayers)
                 {
-                    Vector3 pivotPos1 = Player.transform.position;
-                    Vector3 playerFootPos1; playerFootPos1.x = pivotPos1.x; playerFootPos1.z = pivotPos1.z; playerFootPos1.y = pivotPos1.y - 2f;
-                    Vector3 playerHeadPos1; playerHeadPos1.x = playerFootPos1.x; playerHeadPos1.z = playerFootPos1.z; playerHeadPos1.y = playerFootPos1.y + 4f;
-
-                    Vector3 w2s_playerFoot1 = Camera.main.WorldToScreenPoint(playerFootPos1);
-                    Vector3 w2s_playerHead1 = Camera.main.WorldToScreenPoint(playerHeadPos1);
-
-                    if (w2s_playerFoot1.z > 0f)
-                    {
-                        DrawESP(w2s_playerFoot1, w2s_playerHead1, Color.green, Player.name, Player.Stats.stat_health.Value.ToString());
-                    }
+                    mESP.esp(Player, Color.yellow, Player.Network.LocalSteamID.ToString(), localPlayer);
                 }
 
-                Vector3 pivotPos = localShark.transform.position;
-                Vector3 playerFootPos; playerFootPos.x = pivotPos.x; playerFootPos.z = pivotPos.z; playerFootPos.y = pivotPos.y - 2f;
-                Vector3 playerHeadPos; playerHeadPos.x = playerFootPos.x; playerHeadPos.z = playerFootPos.z; playerHeadPos.y = playerFootPos.y + 2f;
-
-                Vector3 w2s_playerFoot = Camera.main.WorldToScreenPoint(playerFootPos);
-                Vector3 w2s_playerHead = Camera.main.WorldToScreenPoint(playerHeadPos);
-
-                if (w2s_playerFoot.z > 0f)
+                foreach (Network_Entity Entity in NetworkEntities)
                 {
-                    if (localShark.IsDead)
-                    {
-                        DrawESP(w2s_playerFoot, w2s_playerHead, Color.red, localShark.name, localShark.stat_health.Value.ToString());
-                    }
-                    else
-                    {
-                        DrawESP(w2s_playerFoot, w2s_playerHead, Color.yellow, localShark.name, localShark.stat_health.Value.ToString());
-                    }
+                    mESP.esp(Entity, Color.green, Entity.Network.PersonaName, localPlayer);
                 }
 
-                Vector3 pivotPos4 = localRaft.transform.position;
-                Vector3 playerFootPos4; playerFootPos4.x = pivotPos4.x; playerFootPos4.z = pivotPos4.z; playerFootPos4.y = pivotPos4.y - 2f;
-                Vector3 playerHeadPos4; playerHeadPos4.x = playerFootPos4.x; playerHeadPos4.z = playerFootPos4.z; playerHeadPos4.y = playerFootPos4.y + 2f;
-
-                Vector3 w2s_playerFoot4 = Camera.main.WorldToScreenPoint(playerFootPos4);
-                Vector3 w2s_playerHead4 = Camera.main.WorldToScreenPoint(playerHeadPos4);
-
-                if (w2s_playerFoot4.z > 0f)
+                foreach (PickupItem_Networked Item in ItemObjects)
                 {
-                    DrawESP(w2s_playerFoot4, w2s_playerHead4, Color.magenta, localRaft.name, "0");
+                    mESP.esp(Item, Color.green, Item.PickupItem.PickupName, localPlayer);
                 }
 
-                foreach (PickupItem_Networked item in ItemObjects)
+                foreach(RaftBounds Item in Rafts)
                 {
-                    Vector3 pivotPos1 = item.PickupItem.transform.position;
-                    Vector3 playerFootPos1; playerFootPos1.x = pivotPos1.x; playerFootPos1.z = pivotPos1.z; playerFootPos1.y = pivotPos1.y - 2f;
-                    Vector3 playerHeadPos1; playerHeadPos1.x = playerFootPos1.x; playerHeadPos1.z = playerFootPos1.z; playerHeadPos1.y = playerFootPos1.y + 4f;
-
-                    Vector3 w2s_playerFoot1 = Camera.main.WorldToScreenPoint(playerFootPos1);
-                    Vector3 w2s_playerHead1 = Camera.main.WorldToScreenPoint(playerHeadPos1);
-
-                    float distance = Vector3.Distance(pivotPos1, localPlayer.transform.position);
-
-                    if (w2s_playerFoot1.z > 0f && distance <= 70f)
-                    {
-                        DrawText(w2s_playerFoot1, w2s_playerHead1, $"{item.PickupItem.PickupName}");
-                    }
+                    mESP.raftesp(Item, Color.green, Item.name, localPlayer);
                 }
+
             }
-        }
 
-        public void DrawESP(Vector3 objfootPos, Vector3 objheadPos, Color objColor, String name, String health)
+            
+        } //
+
+        private void updateChecks()
         {
-            float height = objheadPos.y - objfootPos.y;
-            float widthOffset = 2f;
-            float width = height / widthOffset;
-
-            Render.DrawBox(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height, width, height, objColor, 2f);
-            if (health != "")
+            if (t_GOD && isLoaded)
             {
-                Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name} [{health}]");
+                mGOD.enable(localPlayer);
+            }
+            if (t_FLYRAFT && isLoaded)
+            {
+                FlyRaft();
+            }
+            if (t_FLYSELF && isLoaded)
+            {
+                FlySelf();
+            }
+        } //
+
+        private void KillShark()
+        {
+            localShark.Button_Kill();
+        }
+
+        private void FlyRaft()
+        {
+            Vector3 raftFlyingPos = new Vector3(localRaft.transform.position.x, raftY, localRaft.transform.position.z);
+            localRaft.transform.position = raftFlyingPos;
+        }
+
+        private void FlySelf()
+        {
+            Vector3 selfFlyingPos = new Vector3(localPlayer.transform.position.x, selfY, localPlayer.transform.position.z);
+            localPlayer.transform.position = selfFlyingPos;
+        }
+
+        private void ReviveAllPlayers()
+        {
+            foreach (Network_Player Player in NetworkPlayers)
+            {
+                if (Player.Stats.IsDead || Convert.ToDouble(Player.Stats.stat_health) <= 0)
+                {
+                    Player.Revive();
+                }
             }
         }
-        public void DrawText(Vector3 objfootPos, Vector3 objheadPos, String name)
-        {
-            float height = objheadPos.y - objfootPos.y;
-            float widthOffset = 2f;
-            float width = height / widthOffset;
 
-            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - (height /2)), $"{name}", Color.red);
+        private void TeleportToRaft()
+        {
+            if (localRaft != null && localPlayer != null)
+            {
+                Vector3 raftPos = localRaft.transform.position;
+                Vector3 newPos = new Vector3(raftPos.x, raftPos.y + 10f, raftPos.z);
+                localPlayer.transform.position = newPos;
+            }
         }
+
     }
 }
