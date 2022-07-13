@@ -34,5 +34,4 @@ To Inject..
 - Press inject
 
 
-![image](https://user-images.githubusercontent.com/38970826/177060045-caa38e35-e367-4e6e-ba6b-34400c7bb25e.png)
-
+![image](https://user-images.githubusercontent.com/38970826/178721053-77619367-459b-4dcb-87db-509e17303c2a.png)
