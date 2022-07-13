@@ -9,7 +9,10 @@ This is a basic mod menu created in C#. It is a base which you can add your own 
 - Restore Stats (Health, Hunger, Thirst, Oxygen)
 - Anchor Raft (Doesn't use anchor, just stops the drift of the water. Reclick to continue)
 - Teleport To Raft (Works well when people take off with the raft :/ )
-- Keep Max Stats (Basically God Mode)
+- God Mode
+- Fly Raft (Numpad + to go up, Numpad - to go down)
+- Fly LocalPlayer (Buggy)
+- Area Magnet (Will teleport all items in the area to you)
 
 Insert Key - Show/Hide Menu
 End Key - Unload DLL File safely
