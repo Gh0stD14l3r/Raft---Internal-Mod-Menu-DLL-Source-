@@ -326,10 +326,12 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="Hacks.cs" />
+    <Compile Include="modules\AimBot.cs" />
     <Compile Include="modules\AreaItemMagnet.cs" />
     <Compile Include="modules\ESP.cs" />
     <Compile Include="modules\GodMode.cs" />
     <Compile Include="modules\ItemSpawner.cs" />
+    <Compile Include="objects\oRaft.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Render.cs" />
   </ItemGroup>

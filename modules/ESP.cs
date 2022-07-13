@@ -27,16 +27,14 @@ namespace RaftHax.modules
 
         public void raftesp(RaftBounds sprite, Color color, String text, Network_Player localPlayer)
         {
-            Vector3 w2s_bl = Camera.main.WorldToScreenPoint(sprite.BottomLeft);
-            Vector3 w2s_br = Camera.main.WorldToScreenPoint(sprite.BottomRight);
-            Vector3 w2s_tl = Camera.main.WorldToScreenPoint(sprite.TopLeft);
-            Vector3 w2s_tr = Camera.main.WorldToScreenPoint(sprite.TopRight);
-
-            Render.DrawLine(new Vector2(w2s_bl.x, (float)Screen.height - w2s_bl.y), new Vector2(w2s_br.x, (float)Screen.height - w2s_br.y), Color.yellow, 2f);
-            Render.DrawLine(new Vector2(w2s_br.x, (float)Screen.height - w2s_br.y), new Vector2(w2s_tr.x, (float)Screen.height - w2s_tr.y), Color.yellow, 2f);
-            Render.DrawLine(new Vector2(w2s_tr.x, (float)Screen.height - w2s_tr.y), new Vector2(w2s_tl.x, (float)Screen.height - w2s_tl.y), Color.yellow, 2f);
-            Render.DrawLine(new Vector2(w2s_tl.x, (float)Screen.height - w2s_tl.y), new Vector2(w2s_bl.x, (float)Screen.height - w2s_bl.y), Color.yellow, 2f);
-
+            Vector3 w2s_raftC = Camera.main.WorldToScreenPoint(sprite.Center);
+            
+            float distance = Vector3.Distance(sprite.Center, localPlayer.transform.position);
+            
+            if (distance >= 5f && w2s_raftC.z >= 0)
+            {
+                Render.DrawLine(new Vector2((float)Screen.width / 2, (float)Screen.height), new Vector2(w2s_raftC.x, (float)Screen.height - w2s_raftC.y), Color.magenta, 2f);
+            }
         }
 
         public void esp(PickupItem_Networked sprite, Color color, String text, Network_Player localPlayer)
@@ -81,10 +79,15 @@ namespace RaftHax.modules
 
             Vector3 w2s_playerFoot = Camera.main.WorldToScreenPoint(playerFootPos);
             Vector3 w2s_playerHead = Camera.main.WorldToScreenPoint(playerHeadPos);
-            
+
+            float distance = Vector3.Distance(pivotPos, localPlayer.transform.position);
+
+            Vector3 prediction = sprite.transform.position + (sprite.transform.forward * 3.5f);
+            Vector3 w2sPrediction = Camera.main.WorldToScreenPoint(prediction);
+
             if (w2s_playerFoot.z > 0f && sprite.entityType != EntityType.Player)
             {
-                float distance = Vector3.Distance(pivotPos, localPlayer.transform.position);
+                
 
                 if (sprite.IsDead)
                 {
@@ -93,6 +96,7 @@ namespace RaftHax.modules
                 else
                 {
                     DrawESP(w2s_playerFoot, w2s_playerHead, Color.yellow, sprite.name + $" [{Math.Round(distance, 0)}]", sprite.stat_health.Value.ToString());
+                    Render.DrawLine(new Vector2(w2s_playerHead.x, (float)Screen.height - w2s_playerHead.y), new Vector2(w2sPrediction.x, (float)Screen.height - w2sPrediction.y), Color.red, 2);
                 }
             }
         }
