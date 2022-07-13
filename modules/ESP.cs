@@ -82,9 +82,6 @@ namespace RaftHax.modules
 
             float distance = Vector3.Distance(pivotPos, localPlayer.transform.position);
 
-            Vector3 prediction = sprite.transform.position + (sprite.transform.forward * 3.5f);
-            Vector3 w2sPrediction = Camera.main.WorldToScreenPoint(prediction);
-
             if (w2s_playerFoot.z > 0f && sprite.entityType != EntityType.Player)
             {
                 
@@ -96,7 +93,6 @@ namespace RaftHax.modules
                 else
                 {
                     DrawESP(w2s_playerFoot, w2s_playerHead, Color.yellow, sprite.name + $" [{Math.Round(distance, 0)}]", sprite.stat_health.Value.ToString());
-                    Render.DrawLine(new Vector2(w2s_playerHead.x, (float)Screen.height - w2s_playerHead.y), new Vector2(w2sPrediction.x, (float)Screen.height - w2sPrediction.y), Color.red, 2);
                 }
             }
         }
