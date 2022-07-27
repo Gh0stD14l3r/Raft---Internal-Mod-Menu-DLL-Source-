@@ -424,14 +424,6 @@ namespace RaftHax.modules
                     Hacks.NetworkPlayers[currentPlayer].transform.position = Hacks.localPlayer.transform.position;
                 }
 
-                if (GUI.Button(new Rect(10f, 234f, 120f, 25f), "Test"))
-                {
-                    Hacks.localPlayer.PersonController.swimSpeed = 20f;
-                    Hacks.localPlayer.PersonController.sprintSpeed = 20f;
-                    Hacks.localPlayer.PersonController.jumpSpeed = 20f;
-                    Hacks.localPlayer.PersonController.normalSpeed = 20f;
-
-                }
                 if (GUI.Button(new Rect(136f, 234f, 120f, 25f), "Revive"))
                 {
                     Bed closestBed = null;
