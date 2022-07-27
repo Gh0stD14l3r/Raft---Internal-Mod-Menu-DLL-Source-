@@ -22,7 +22,7 @@ namespace RaftHax.modules
             Vector3 w2s_playerFoot1 = Camera.main.WorldToScreenPoint(playerFootPos1);
             Vector3 w2s_playerHead1 = Camera.main.WorldToScreenPoint(playerHeadPos1);
 
-            if (Vector3.Distance(sprite.transform.position, localPlayer.transform.position) >= 3f && (IsOnScreen(w2s_playerFoot1) || IsOnScreen(playerHeadPos1)))
+            if (Vector3.Distance(sprite.transform.position, localPlayer.transform.position) >= 3f && w2s_playerFoot1.z > 0f && (IsOnScreen(w2s_playerFoot1) || IsOnScreen(playerHeadPos1)))
             {
                 if (UI.t_DrawBox)
                 {
