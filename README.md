@@ -1,24 +1,46 @@
-Raft Mod Menu - C# DLL Source [Base]
+Raft Mod Menu v2.0 - C# DLL Source [Base]
 
 This is a basic mod menu created in C#. It is a base which you can add your own items to it or modifications. Currently it has the following.
 
-- ESP (Players, Shark, Raft) (This works but is not the best code)
-- Kill Shark
-- Damage Shark
-- Revive Players (Untested)
-- Restore Stats (Health, Hunger, Thirst, Oxygen)
-- Anchor Raft (Doesn't use anchor, just stops the drift of the water. Reclick to continue)
-- Teleport To Raft (Works well when people take off with the raft :/ )
+[ESP Menu]
+ - Raft (Label/Lines)
+ - Players (Skeleton, Boxs, Labels)
+ - Entitys (Boxs, Lines)
+ - PickupItems (Labels, Fade with distance)
+ - Modify ESP Distance
+
+[Control Menu]
+- Kill Shark      [Host Only]
+- Damage Shark    [Host Only]
+- Revive Players  [Host Only]
+- Restore Stats
+- Anchor Raft     [Host Only]
+- Teleport To Raft
 - God Mode
-- Fly Raft (Numpad + to go up, Numpad - to go down)
-- Fly LocalPlayer (Buggy)
-- Area Magnet (Will teleport all items in the area to you)
-- Basic Shark Aimbot (Can be changed for other entities in the code)
+- Flying Raft     [Host Only]
+- Localplayer Fly
+
+[Spawn Menu]
+- Item Spawn Buttons
+- Custom Spawn by Unique Name
+
+[Speed Hack Menu]
+- Walking, Sprinting, Swimming Speed Hack
+- Jump Height Increaser
+- Multiplyer 
+NOTE: Multiplier max is set to 100f you can change higher if needed
+
+[Player Menu]
+- Display all players connected
+- Display Health, Thirst, Oxygen, Hunger, IsLocal, Position (sometimes inaccurate if used as client)
+- Teleport To Player
+- Teleport Player To Me [Host Only]
+- Revive                [Host Only]
+
 
 Insert Key - Show/Hide Menu
 End Key - Unload DLL File safely
 
-Other hotkeys and updates will be added in time.
 
 To compile..
 - Download & Open Sln file for Visual Studio
@@ -34,4 +56,4 @@ To Inject..
 - Press inject
 
 
-![image](https://user-images.githubusercontent.com/38970826/178721053-77619367-459b-4dcb-87db-509e17303c2a.png)
+![image](https://user-images.githubusercontent.com/38970826/181207121-61159fe2-9aa4-4c5a-b902-5d59041f562e.png)
