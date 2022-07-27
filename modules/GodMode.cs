@@ -8,7 +8,7 @@ namespace RaftHax.modules
 {
     class GodMode
     {
-        public void enable (Network_Player localPlayer)
+        public static void enable (Network_Player localPlayer)
         {
             if (localPlayer.Stats.stat_health.Value != localPlayer.Stats.stat_health.Max)
             {
